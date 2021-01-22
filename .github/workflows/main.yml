@@ -1,0 +1,58 @@
+#Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget
+#Error (line 29): the step 'AppCenterTest@1' does not have a conversion path yet
+#Error (line 45): the step 'AppCenterDistribute@3' does not have a conversion path yet
+on:
+  push:
+    branches:
+    - main
+env:
+  buildConfiguration: Debug
+  outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - # 'Note: This is a third party action: https://github.com/warrenbuckley/Setup-Nuget'
+      uses: warrenbuckley/Setup-Nuget@v1
+    - run: nuget restore **/*.sln
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild **/*MobileDevOps.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }}
+    - run: |
+        cd Blank
+        nuget restore
+        cd Blank.Android
+        msbuild **/UIAndroidTest.csproj /verbosity:normal /t:Rebuild /p:Configuration=${{ env.buildConfiguration }}
+    - # "Error: the step 'AppCenterTest@1' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'AppCenterTest@1' does not have a conversion path yet"
+        #task: AppCenterTest@1
+        #inputs:
+        #  appfile: ${{ env.outputDirectory }}/com.companyname.MobileDevOps.apk
+        #  artifactsdirectory: ${{ github.workspace }}/AppCenterTest
+        #  frameworkoption: uitest
+        #  uitestbuilddirectory: ${{ env.outputDirectory }}
+        #  uitesttoolsdirectory: ${{ github.workspace }}/packages/xamarin.uitest/3.0.3/tools
+        #  credentialsoption: serviceEndpoint
+        #  serverendpoint: App Center Connection
+        #  appslug: hebrevar-microsoft.com/MyHealthMobileApp
+        #  devices: hebrevar-microsoft.com/android-devices
+        #  series: production
+        #  localeoption: en_US
+    - # "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
+      run: |
+        echo "Error: the step 'AppCenterDistribute@3' does not have a conversion path yet"
+        #task: AppCenterDistribute@3
+        #inputs:
+        #  serverendpoint: App Center Connection
+        #  appslug: hebrevar-microsoft.com/MyHealthMobileApp
+        #  appfile: ${{ env.outputDirectory }}/com.companyname.MobileDevOps.apk
+        #  symbolsoption: Android
+        #  releasenotesoption: input
+        #  releasenotesinput: My Health Mobile App Release
+        #  destinationtype: groups
+        #  distributiongroupid: 1037c731-59f4-42cd-b020-5f691be03456
+                    
