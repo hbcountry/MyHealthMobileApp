@@ -5,9 +5,6 @@ on:
   push:
     branches:
     - main
-env:
-  buildConfiguration: Debug
-  outputDirectory: ${{ env.build.binariesDirectory }}/${{ env.buildConfiguration }}
 jobs:
   build:
     runs-on: macos-latest
