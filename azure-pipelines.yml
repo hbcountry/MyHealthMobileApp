@@ -1,0 +1,62 @@
+# Xamarin.Android
+# Build a Xamarin.Android project.
+# Add steps that test, sign, and distribute an app, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/xamarin
+
+trigger:
+- master
+
+pool:
+  vmImage: 'macos-latest'
+
+variables:
+  buildConfiguration: 'Debug'
+  outputDirectory: '$(build.binariesDirectory)/$(buildConfiguration)'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '**/*.sln'
+    restoreDirectory: $(build.sourcesDirectory)/packages
+
+- task: XamarinAndroid@1
+  inputs:
+    projectFile: '**/*MobileDevOps.csproj'
+    outputDirectory: '$(outputDirectory)'
+    configuration: '$(buildConfiguration)'
+    jdkOption: 'JDKVersion'
+
+- task: XamarinAndroid@1
+  inputs:
+    projectFile: '**/UIAndroidTest.csproj'
+    outputDirectory: '$(outputDirectory)'
+    configuration: '$(buildConfiguration)'
+    createAppPackage: false
+    jdkOption: 'JDKVersion'
+
+- task: AppCenterTest@1
+  inputs:
+      appFile: '$(outputDirectory)/com.companyname.MobileDevOps.apk'
+      artifactsDirectory: '$(Build.ArtifactStagingDirectory)/AppCenterTest'
+      frameworkOption: 'uitest'
+      uiTestBuildDirectory: '$(outputDirectory)'
+      uiTestToolsDirectory: '$(build.sourcesDirectory)/packages/xamarin.uitest/3.0.3/tools'
+      credentialsOption: 'serviceEndpoint'
+      serverEndpoint: 'App Center Connection'
+      appSlug: 'hebrevar-microsoft.com/MyHealthMobileApp'
+      devices: 'hebrevar-microsoft.com/android-devices'
+      series: 'production'
+      localeOption: 'en_US'
+
+- task: AppCenterDistribute@3
+  inputs:
+      serverEndpoint: 'App Center Connection'
+      appSlug: 'hebrevar-microsoft.com/MyHealthMobileApp'
+      appFile: '$(outputDirectory)/com.companyname.MobileDevOps.apk'
+      symbolsOption: 'Android'
+      releaseNotesOption: 'input'
+      releaseNotesInput: 'My Health Mobile App Release'
+      destinationType: 'groups'
+      distributionGroupId: '1037c731-59f4-42cd-b020-5f691be03456'
